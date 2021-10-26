@@ -1,0 +1,25 @@
+load("@dbx_build_tools//build_tools/py:py.bzl", "dbx_py_binary")
+load("@rules_pkg//:pkg.bzl", "pkg_tar")
+
+dbx_py_binary(
+   name = "foo",
+   srcs = ["foo.py"],
+   main = "foo.py",
+   python2_compatible = False,
+   deps = ["@dbx_build_tools//pip/setuptools", "@dbx_build_tools//pip/six"],
+)
+
+pkg_tar(
+   name = "pkg",
+   srcs = [":foo"],
+   include_runfiles = True,
+   strip_prefix = ".",
+   remap_paths = {
+	"external/org_python_cpython_38": ".",
+	"external/dbx_build_tools/pip/six/six-cpython-38": "lib/python3.8/site-packages",
+	"external/dbx_build_tools/pip/setuptools/setuptools-cpython-38": "lib/python3.8/site-packages",
+	# ideally we could drop files under external/dbx_build_tools/build_tools as we don't need these
+	# as these are just a workaround to trigger bazel's __init__.py insertion
+	"foo": "bin/foo",
+   },
+)
